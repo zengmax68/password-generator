@@ -124,3 +124,91 @@
   </label>
 
   <label><input type="checkbox" id="lower" checked /> Lowercase</label>
+  <label><input type="checkbox" id="upper" checked /> Uppercase</label>
+  <label><input type="checkbox" id="numbers" checked /> Numbers</label>
+  <label><input type="checkbox" id="symbols" /> Symbols</label>
+
+  <label><input type="checkbox" id="darkMode" onchange="toggleDarkMode()" /> Dark Mode</label>
+
+  <button onclick="generatePasswords()">Generate</button>
+  <button onclick="copyPasswords()">Copy</button>
+  <button onclick="downloadPasswords()">Download</button>
+
+  <div>Password Strength:</div>
+  <progress id="strength" value="0" max="100"></progress>
+
+  <div id="output"></div>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    function generatePasswords() {
+      const count = parseInt(document.getElementById("count").value);
+      let results = "";
+      for (let i = 0; i < count; i++) {
+        const pw = createOnePassword();
+        results += pw + "\n";
+        if (i === 0) evaluateStrength(pw);
+      }
+      const output = document.getElementById("output");
+      output.textContent = results.trim();
+      output.classList.add("show");
+    }
+
+    function createOnePassword() {
+      const length = parseInt(document.getElementById("length").value);
+      const useLower = document.getElementById("lower").checked;
+      const useUpper = document.getElementById("upper").checked;
+      const useNumbers = document.getElementById("numbers").checked;
+      const useSymbols = document.getElementById("symbols").checked;
+
+      const lower = "abcdefghijklmnopqrstuvwxyz";
+      const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const numbers = "0123456789";
+      const symbols = "!@#$%^&*()_+[]{}<>?/";
+
+      let allChars = "";
+      if (useLower) allChars += lower;
+      if (useUpper) allChars += upper;
+      if (useNumbers) allChars += numbers;
+      if (useSymbols) allChars += symbols;
+
+      if (allChars === "") return "⚠️ Select at least one character type";
+
+      let password = "";
+      for (let i = 0; i < length; i++) {
+        const randIndex = Math.floor(Math.random() * allChars.length);
+        password += allChars[randIndex];
+      }
+      return password;
+    }
+
+    function evaluateStrength(pw) {
+      let score = 0;
+      if (pw.length >= 8) score += 25;
+      if (/[A-Z]/.test(pw)) score += 25;
+      if (/[0-9]/.test(pw)) score += 25;
+      if (/[^A-Za-z0-9]/.test(pw)) score += 25;
+      document.getElementById("strength").value = score;
+    }
+
+    function copyPasswords() {
+      const text = document.getElementById("output").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied to clipboard!");
+      });
+    }
+
+    function downloadPasswords() {
+      const text = document.getElementById("output").textContent;
+      const blob = new Blob([text], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "passwords.txt";
+      link.click();
+    }
+  </script>
+</body>
+</html>
